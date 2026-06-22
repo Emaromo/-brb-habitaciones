@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\Ema\\\\Desktop\\\\brb habitaciones\\\\frontend\\\\src\\\\app\\\\admin\\\\usuarios\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\Ema\\\\Desktop\\\\brb habitaciones\\\\frontend\\\\src\\\\app\\\\admin\\\\propiedades\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\Ema\\\\Desktop\\\\brb habitaciones\\\\frontend\\\\src\\\\app\\\\admin\\\\reservas\")"
+    ]
+  }
+}

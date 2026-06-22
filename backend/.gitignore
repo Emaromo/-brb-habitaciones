@@ -1,0 +1,15 @@
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.log
+
+# Env / secrets
+.env
+appsettings.Production.json
+appsettings.*.local.json
+secrets.json
