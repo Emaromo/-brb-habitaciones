@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { MapPin, Users, ArrowLeft } from '@phosphor-icons/react/dist/ssr'
 import Navbar from '@/components/Navbar'
 import PhotoGallery from '@/components/PhotoGallery'
@@ -7,6 +8,26 @@ import AmenityBadge from '@/components/AmenityBadge'
 import BookingWidget from './BookingWidget'
 import { serverFetch } from '@/lib/api/fetcher'
 import type { RoomDto } from '@/types'
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const room = await serverFetch<RoomDto>(`/api/v1/rooms/${params.id}`)
+  if (!room) return { title: 'Habitación no encontrada' }
+
+  const coverPhoto = room.photos.find(p => p.isCover) ?? room.photos[0]
+  const description = room.description.substring(0, 155)
+
+  return {
+    title: `${room.title} en ${room.propertyName}`,
+    description,
+    openGraph: {
+      title: `${room.title} — $${room.pricePerNight.toLocaleString('es-AR')}/noche`,
+      description,
+      images: coverPhoto ? [{ url: coverPhoto.url, width: 1200, height: 800, alt: room.title }] : [],
+      type: 'website',
+      locale: 'es_AR',
+    },
+  }
+}
 
 export default async function HabitacionPage({ params }: { params: { id: string } }) {
   const room = await serverFetch<RoomDto>(`/api/v1/rooms/${params.id}`)

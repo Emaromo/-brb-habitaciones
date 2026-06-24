@@ -1,9 +1,11 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using BrbHabitaciones.Api.Middleware;
 using BrbHabitaciones.Infrastructure.Data;
 using BrbHabitaciones.Infrastructure.Data.Seed;
 using BrbHabitaciones.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -68,6 +70,29 @@ builder.Services.AddCors(opts =>
               .AllowAnyMethod()
               .AllowCredentials()));
 
+builder.Services.AddRateLimiter(opts =>
+{
+    // Auth endpoints: max 10 requests/minute per IP
+    opts.AddFixedWindowLimiter("auth", o =>
+    {
+        o.Window = TimeSpan.FromMinutes(1);
+        o.PermitLimit = 10;
+        o.QueueLimit = 0;
+        o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+
+    // Public search endpoints: max 60 requests/minute per IP
+    opts.AddFixedWindowLimiter("search", o =>
+    {
+        o.Window = TimeSpan.FromMinutes(1);
+        o.PermitLimit = 60;
+        o.QueueLimit = 0;
+        o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+
+    opts.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
@@ -82,6 +107,7 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseRateLimiter();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseCors("FrontendPolicy");
 app.UseAuthentication();

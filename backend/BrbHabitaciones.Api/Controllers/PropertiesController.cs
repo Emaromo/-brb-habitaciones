@@ -4,6 +4,7 @@ using BrbHabitaciones.Application.DTOs.Properties;
 using BrbHabitaciones.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BrbHabitaciones.Api.Controllers;
 
@@ -12,6 +13,7 @@ namespace BrbHabitaciones.Api.Controllers;
 public class PropertiesController(IPropertyService propertyService) : ControllerBase
 {
     [HttpGet]
+    [EnableRateLimiting("search")]
     public async Task<IActionResult> GetAll([FromQuery] PropertySearchQuery query)
     {
         var result = await propertyService.SearchAsync(query);

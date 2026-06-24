@@ -1,11 +1,32 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { MapPin, House } from '@phosphor-icons/react/dist/ssr'
 import Navbar from '@/components/Navbar'
 import RoomCard from '@/components/RoomCard'
 import { serverFetch } from '@/lib/api/fetcher'
 import type { PropertyDto } from '@/types'
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const property = await serverFetch<PropertyDto>(`/api/v1/properties/${params.id}`)
+  if (!property) return { title: 'Propiedad no encontrada' }
+
+  const coverPhoto = property.photos.find(p => p.isCover) ?? property.photos[0]
+  const description = property.description.substring(0, 155)
+
+  return {
+    title: `${property.name} en ${property.city}, ${property.province}`,
+    description,
+    openGraph: {
+      title: property.name,
+      description,
+      images: coverPhoto ? [{ url: coverPhoto.url, width: 1200, height: 800, alt: property.name }] : [],
+      type: 'website',
+      locale: 'es_AR',
+    },
+  }
+}
 
 export default async function PropiedadPage({ params }: { params: { id: string } }) {
   const property = await serverFetch<PropertyDto>(`/api/v1/properties/${params.id}`)
