@@ -60,8 +60,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:3000")
-    .Split(',', StringSplitOptions.RemoveEmptyEntries);
+var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]
+    ?? "http://localhost:3000,http://localhost:3001")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 builder.Services.AddCors(opts =>
     opts.AddPolicy("FrontendPolicy", policy =>
@@ -108,8 +109,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseRateLimiter();
+app.UseCors("FrontendPolicy");           // Must be before exception middleware so CORS headers appear on error responses
 app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

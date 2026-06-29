@@ -1,4 +1,5 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+// Server-side only — no NEXT_PUBLIC_ prefix needed, never exposed to the browser
+const BASE = process.env.BACKEND_URL ?? 'http://localhost:8080'
 
 export async function serverFetch<T>(
   path: string,
