@@ -9,7 +9,7 @@ namespace BrbHabitaciones.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService, ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("register")]
     [EnableRateLimiting("auth")]
@@ -17,7 +17,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        logger.LogInformation("[AUTH] Register START — email={Email}", request.Email);
         var result = await authService.RegisterAsync(request);
+        logger.LogInformation("[AUTH] Register OK — userId={UserId}", result.User.Id);
         return StatusCode(StatusCodes.Status201Created,
             ApiResponse<AuthResponse>.Ok(result, "Cuenta creada exitosamente."));
     }
@@ -28,7 +30,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        logger.LogInformation("[AUTH] Login START — email={Email}", request.Email);
         var result = await authService.LoginAsync(request);
+        logger.LogInformation("[AUTH] Login OK — userId={UserId}", result.User.Id);
         return Ok(ApiResponse<AuthResponse>.Ok(result));
     }
 
