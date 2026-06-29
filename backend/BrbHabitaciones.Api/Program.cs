@@ -100,9 +100,17 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    var startupLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    startupLogger.LogInformation("=== BRB API STARTUP — build compiled {BuildTime} ===",
+        new System.IO.FileInfo(typeof(Program).Assembly.Location).LastWriteTimeUtc);
+
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    startupLogger.LogInformation("Running EnsureCreatedAsync...");
+    var created = await db.Database.EnsureCreatedAsync();
+    startupLogger.LogInformation("EnsureCreatedAsync done — schema was {Action}",
+        created ? "CREATED (new)" : "already exists");
     await SeedData.SeedAsync(db);
+    startupLogger.LogInformation("SeedData done.");
 }
 
 app.UseSwagger();
