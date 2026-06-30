@@ -15,17 +15,20 @@ public class HealthController(AppDbContext db) : ControllerBase
     public IActionResult Get() =>
         Ok(ApiResponse<object>.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
-    // Returns the email and role from the current JWT — use to verify role after login.
+    // Returns email and role from the JWT if present — no auth required, works anonymously too.
     [HttpGet("whoami")]
-    [Authorize]
+    [AllowAnonymous]
     public IActionResult WhoAmI()
     {
+        if (User.Identity?.IsAuthenticated != true)
+            return Ok(ApiResponse<object>.Ok(new { authenticated = false, message = "Sin token o token inválido." }));
+
         var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
                  ?? User.FindFirst("email")?.Value;
         var role  = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
                  ?? User.FindFirst("role")?.Value;
         var id    = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        return Ok(ApiResponse<object>.Ok(new { id, email, role }));
+        return Ok(ApiResponse<object>.Ok(new { authenticated = true, id, email, role }));
     }
 
     // Bootstrap endpoint — promotes a user to Administrador.
