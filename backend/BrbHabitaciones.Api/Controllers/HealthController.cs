@@ -1,4 +1,5 @@
 using BrbHabitaciones.Application.DTOs.Common;
+using BrbHabitaciones.Domain.Enums;
 using BrbHabitaciones.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,8 +14,30 @@ public class HealthController(AppDbContext db) : ControllerBase
     public IActionResult Get() =>
         Ok(ApiResponse<object>.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
-    // Diagnostic endpoint — returns DB schema info to identify column type mismatches.
-    // Remove once the production DB issue is resolved.
+    // Bootstrap endpoint — promotes a user to Administrador.
+    // Protected by Bootstrap:Secret env var. Remove after initial setup.
+    [HttpPost("make-admin")]
+    public async Task<IActionResult> MakeAdmin(
+        [FromBody] MakeAdminRequest request,
+        [FromServices] IConfiguration config)
+    {
+        var secret = config["Bootstrap:Secret"] ?? "brb-bootstrap-2026";
+        if (request.Secret != secret)
+            return Unauthorized(ApiResponse<object>.Fail("Clave incorrecta."));
+
+        var user = await db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == request.Email.ToLowerInvariant());
+
+        if (user is null)
+            return NotFound(ApiResponse<object>.Fail($"Usuario {request.Email} no encontrado."));
+
+        user.Role = UserRole.Administrador;
+        await db.SaveChangesAsync();
+
+        return Ok(ApiResponse<object>.Ok(new { email = user.Email, role = "Administrador" },
+            $"{user.Email} ahora es Administrador."));
+    }
+
     [HttpGet("db")]
     public async Task<IActionResult> DbCheck()
     {
@@ -46,3 +69,5 @@ public class HealthController(AppDbContext db) : ControllerBase
         }
     }
 }
+
+public record MakeAdminRequest(string Email, string Secret);
