@@ -13,8 +13,10 @@ public static class DemoSeedData
 
     public static async Task SeedAsync(AppDbContext db)
     {
-        // Admin
-        if (!await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == AdminEmail))
+        // Admin — create or reset password+role
+        var adminUser = await db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == AdminEmail);
+        if (adminUser is null)
         {
             db.Users.Add(new User
             {
@@ -24,11 +26,18 @@ public static class DemoSeedData
                 LastName     = "BRB",
                 Role         = UserRole.Administrador,
             });
-            await db.SaveChangesAsync();
         }
+        else
+        {
+            adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(AdminPassword);
+            adminUser.Role         = UserRole.Administrador;
+        }
+        await db.SaveChangesAsync();
 
-        // Dueño de propiedades demo
-        if (!await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == DemoOwnerEmail))
+        // Dueño de propiedades demo — create or reset password+role
+        var ownerUser = await db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == DemoOwnerEmail);
+        if (ownerUser is null)
         {
             db.Users.Add(new User
             {
@@ -39,8 +48,13 @@ public static class DemoSeedData
                 Phone        = "+54 11 4567-8901",
                 Role         = UserRole.DuenoAlojamiento,
             });
-            await db.SaveChangesAsync();
         }
+        else
+        {
+            ownerUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(DemoOwnerPassword);
+            ownerUser.Role         = UserRole.DuenoAlojamiento;
+        }
+        await db.SaveChangesAsync();
 
         if (await db.Properties.AnyAsync()) return;
 
