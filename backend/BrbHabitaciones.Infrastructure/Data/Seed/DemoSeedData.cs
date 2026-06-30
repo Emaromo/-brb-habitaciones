@@ -8,7 +8,8 @@ public static class DemoSeedData
 {
     private const string DemoOwnerEmail = "dueno@brbhabitaciones.com";
     private const string DemoOwnerPassword = "Demo1234!";
-    private const string AdminEmail = "admin@brbhabitaciones.com";
+    private const string AdminEmail  = "admin@brbhabitaciones.com";
+    private const string Admin2Email = "admin2@brbhabitaciones.com";
     private const string AdminPassword = "Admin1234!";
 
     public static async Task SeedAsync(AppDbContext db)
@@ -31,6 +32,27 @@ public static class DemoSeedData
         {
             adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(AdminPassword);
             adminUser.Role         = UserRole.Administrador;
+        }
+        await db.SaveChangesAsync();
+
+        // Admin2 — create or reset password+role
+        var admin2User = await db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == Admin2Email);
+        if (admin2User is null)
+        {
+            db.Users.Add(new User
+            {
+                Email        = Admin2Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(AdminPassword),
+                FirstName    = "Admin2",
+                LastName     = "BRB",
+                Role         = UserRole.Administrador,
+            });
+        }
+        else
+        {
+            admin2User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(AdminPassword);
+            admin2User.Role         = UserRole.Administrador;
         }
         await db.SaveChangesAsync();
 
