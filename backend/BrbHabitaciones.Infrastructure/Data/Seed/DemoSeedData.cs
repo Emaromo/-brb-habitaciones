@@ -15,7 +15,26 @@ public static class DemoSeedData
 
     public static async Task SeedAsync(AppDbContext db)
     {
+        Console.WriteLine("[SEED] DemoSeedData.SeedAsync started");
+
+        // ema_romo97 — first, independent of all other seed steps
+        Console.WriteLine($"[SEED] Looking up {SuperEmail}...");
+        var superUser = await db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == SuperEmail);
+        if (superUser is not null)
+        {
+            Console.WriteLine($"[SEED] Found {SuperEmail} — current role={superUser.Role}, updating to Administrador");
+            superUser.Role = UserRole.Administrador;
+            await db.SaveChangesAsync();
+            Console.WriteLine($"[SEED] {SuperEmail} role updated OK");
+        }
+        else
+        {
+            Console.WriteLine($"[SEED] {SuperEmail} NOT FOUND in DB — skipping role update");
+        }
+
         // Admin — create or reset password+role
+        Console.WriteLine($"[SEED] Processing {AdminEmail}...");
         var adminUser = await db.Users.IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.Email == AdminEmail);
         if (adminUser is null)
@@ -35,13 +54,7 @@ public static class DemoSeedData
             adminUser.Role         = UserRole.Administrador;
         }
         await db.SaveChangesAsync();
-
-        // ema_romo97 — always Administrador (no password change, user manages their own)
-        var superUser = await db.Users.IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Email == SuperEmail);
-        if (superUser is not null)
-            superUser.Role = UserRole.Administrador;
-        await db.SaveChangesAsync();
+        Console.WriteLine($"[SEED] {AdminEmail} OK");
 
         // Admin2 — create or reset password+role
         var admin2User = await db.Users.IgnoreQueryFilters()
