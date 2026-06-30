@@ -14,6 +14,19 @@ public class HealthController(AppDbContext db) : ControllerBase
     public IActionResult Get() =>
         Ok(ApiResponse<object>.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
+    // Returns the email and role from the current JWT — use to verify role after login.
+    [HttpGet("whoami")]
+    [Authorize]
+    public IActionResult WhoAmI()
+    {
+        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                 ?? User.FindFirst("email")?.Value;
+        var role  = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                 ?? User.FindFirst("role")?.Value;
+        var id    = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return Ok(ApiResponse<object>.Ok(new { id, email, role }));
+    }
+
     // Bootstrap endpoint — promotes a user to Administrador.
     // Protected by Bootstrap:Secret env var. Remove after initial setup.
     [HttpPost("make-admin")]
