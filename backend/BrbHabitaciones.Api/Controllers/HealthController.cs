@@ -1,6 +1,7 @@
 using BrbHabitaciones.Application.DTOs.Common;
 using BrbHabitaciones.Domain.Enums;
 using BrbHabitaciones.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
