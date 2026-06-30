@@ -8,13 +8,29 @@ public static class DemoSeedData
 {
     private const string DemoOwnerEmail = "dueno@brbhabitaciones.com";
     private const string DemoOwnerPassword = "Demo1234!";
+    private const string AdminEmail = "admin@brbhabitaciones.com";
+    private const string AdminPassword = "Admin1234!";
 
     public static async Task SeedAsync(AppDbContext db)
     {
-        // Always ensure the demo owner exists, even if properties were seeded before
+        // Admin
+        if (!await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == AdminEmail))
+        {
+            db.Users.Add(new User
+            {
+                Email        = AdminEmail,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(AdminPassword),
+                FirstName    = "Admin",
+                LastName     = "BRB",
+                Role         = UserRole.Administrador,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        // Dueño de propiedades demo
         if (!await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == DemoOwnerEmail))
         {
-            var ownerOnly = new User
+            db.Users.Add(new User
             {
                 Email        = DemoOwnerEmail,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(DemoOwnerPassword),
@@ -22,8 +38,7 @@ public static class DemoSeedData
                 LastName     = "Rodríguez",
                 Phone        = "+54 11 4567-8901",
                 Role         = UserRole.DuenoAlojamiento,
-            };
-            db.Users.Add(ownerOnly);
+            });
             await db.SaveChangesAsync();
         }
 
