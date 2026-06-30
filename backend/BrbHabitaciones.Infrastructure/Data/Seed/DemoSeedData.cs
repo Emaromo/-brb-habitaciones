@@ -11,20 +11,27 @@ public static class DemoSeedData
 
     public static async Task SeedAsync(AppDbContext db)
     {
+        // Always ensure the demo owner exists, even if properties were seeded before
+        if (!await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == DemoOwnerEmail))
+        {
+            var ownerOnly = new User
+            {
+                Email        = DemoOwnerEmail,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(DemoOwnerPassword),
+                FirstName    = "Carlos",
+                LastName     = "Rodríguez",
+                Phone        = "+54 11 4567-8901",
+                Role         = UserRole.DuenoAlojamiento,
+            };
+            db.Users.Add(ownerOnly);
+            await db.SaveChangesAsync();
+        }
+
         if (await db.Properties.AnyAsync()) return;
 
-        // ── Usuario dueño ──────────────────────────────────────────────
-        var owner = new User
-        {
-            Email    = DemoOwnerEmail,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(DemoOwnerPassword),
-            FirstName = "Carlos",
-            LastName  = "Rodríguez",
-            Phone     = "+54 11 4567-8901",
-            Role      = UserRole.DuenoAlojamiento,
-        };
-        db.Users.Add(owner);
-        await db.SaveChangesAsync();
+        // ── Tomamos el usuario ya creado arriba ────────────────────────
+        var owner = await db.Users.IgnoreQueryFilters()
+            .FirstAsync(u => u.Email == DemoOwnerEmail);
 
         // ── Amenities ya seedeados — tomamos los que necesitamos ───────
         var amenities = await db.Amenities.ToDictionaryAsync(a => a.Name);
