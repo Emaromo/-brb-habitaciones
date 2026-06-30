@@ -50,6 +50,9 @@ public class AuthService(
         if (!user.IsActive)
             throw new UnauthorizedAccessException("Tu cuenta está desactivada.");
 
+        logger.LogInformation("[AuthService] Login OK — email={Email} role={Role} userId={UserId}",
+            user.Email, user.Role, user.Id);
+
         return await BuildAuthResponseAsync(user);
     }
 
