@@ -17,10 +17,10 @@ public class PropertyRepository(AppDbContext db) : IPropertyRepository
             .Where(p => p.DeletedAt == null && p.IsActive && p.IsApproved);
 
         if (!string.IsNullOrWhiteSpace(query.Province))
-            q = q.Where(p => p.Province == query.Province);
+            q = q.Where(p => EF.Functions.ILike(p.Province, query.Province));
 
         if (!string.IsNullOrWhiteSpace(query.City))
-            q = q.Where(p => p.City.ToLower().Contains(query.City.ToLower()));
+            q = q.Where(p => EF.Functions.ILike(p.City, $"%{query.City}%"));
 
         if (query.MinCapacity.HasValue)
             q = q.Where(p => p.Rooms.Any(r => r.Capacity >= query.MinCapacity.Value && r.IsActive && r.DeletedAt == null));
