@@ -55,6 +55,29 @@ public class HealthController(AppDbContext db) : ControllerBase
             $"{user.Email} ahora es Administrador."));
     }
 
+    // Promotes a user to DuenoAlojamiento — same secret as make-admin.
+    [HttpPost("make-dueno")]
+    public async Task<IActionResult> MakeDueno(
+        [FromBody] MakeAdminRequest request,
+        [FromServices] IConfiguration config)
+    {
+        var secret = config["Bootstrap:Secret"] ?? "brb-bootstrap-2026";
+        if (request.Secret != secret)
+            return Unauthorized(ApiResponse<object>.Fail("Clave incorrecta."));
+
+        var user = await db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == request.Email.ToLowerInvariant());
+
+        if (user is null)
+            return NotFound(ApiResponse<object>.Fail($"Usuario {request.Email} no encontrado."));
+
+        user.Role = UserRole.DuenoAlojamiento;
+        await db.SaveChangesAsync();
+
+        return Ok(ApiResponse<object>.Ok(new { email = user.Email, role = "DuenoAlojamiento" },
+            $"{user.Email} ahora es DuenoAlojamiento."));
+    }
+
     [HttpGet("db")]
     public async Task<IActionResult> DbCheck()
     {
