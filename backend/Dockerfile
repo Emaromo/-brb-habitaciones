@@ -10,11 +10,7 @@ RUN dotnet restore "BrbHabitaciones.Api/BrbHabitaciones.Api.csproj"
 COPY . .
 WORKDIR "/src/BrbHabitaciones.Api"
 
-# Cache buster — pass --build-arg BUILD_DATE=$(date +%s) from EasyPanel to force recompile
-ARG BUILD_DATE=unknown
-RUN echo "Build date: $BUILD_DATE"
-
-RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
+RUN echo "FORCE_REBUILD=20260701c" && dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
