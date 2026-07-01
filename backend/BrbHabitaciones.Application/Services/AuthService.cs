@@ -32,6 +32,7 @@ public class AuthService(
             Role = UserRole.DuenoAlojamiento
         };
 
+        Console.WriteLine($"[DEBUG] RegisterAsync — assigning role: {user.Role} (int={( int)user.Role}) for {user.Email}");
         logger.LogInformation("[AuthService] RegisterAsync — step 3: saving user to DB (userId={UserId})", user.Id);
         await userRepository.CreateAsync(user);
 
