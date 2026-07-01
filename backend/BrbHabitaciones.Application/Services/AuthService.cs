@@ -29,7 +29,7 @@ public class AuthService(
             FirstName = request.FirstName,
             LastName = request.LastName,
             Phone = request.Phone,
-            Role = UserRole.Cliente
+            Role = UserRole.DuenoAlojamiento
         };
 
         logger.LogInformation("[AuthService] RegisterAsync — step 3: saving user to DB (userId={UserId})", user.Id);
