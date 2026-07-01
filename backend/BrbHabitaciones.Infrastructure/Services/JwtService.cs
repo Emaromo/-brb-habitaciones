@@ -15,7 +15,7 @@ public class JwtService(IConfiguration config) : IJwtService
         ?? throw new InvalidOperationException("Jwt:Secret no configurado.");
     private readonly string _issuer = config["Jwt:Issuer"] ?? "brb-api";
     private readonly string _audience = config["Jwt:Audience"] ?? "brb-frontend";
-    private readonly int _accessMinutes = int.Parse(config["Jwt:AccessTokenMinutes"] ?? "60");
+    private readonly int _accessMinutes = int.Parse(config["Jwt:AccessTokenMinutes"] ?? "480");
     private readonly int _refreshDays = int.Parse(config["Jwt:RefreshTokenDays"] ?? "30");
 
     public string GenerateAccessToken(User user)

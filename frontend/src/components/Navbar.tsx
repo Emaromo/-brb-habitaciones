@@ -1,12 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { useAuthStore } from '@/lib/stores/auth'
+import { useAuthStore, getRoleFromToken } from '@/lib/stores/auth'
 import { useRouter } from 'next/navigation'
 
 export default function Navbar() {
-  const { isAuthenticated, user, clearAuth } = useAuthStore()
+  const { isAuthenticated, user, token, clearAuth } = useAuthStore()
   const router = useRouter()
+
+  const role = getRoleFromToken(token) ?? user?.role ?? null
+  const isAdmin = role === 'Administrador'
 
   const handleLogout = () => {
     clearAuth()
@@ -23,6 +26,14 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
           {isAuthenticated ? (
             <>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-semibold transition-colors"
+                >
+                  Admin
+                </Link>
+              )}
               <Link
                 href="/dashboard"
                 className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"

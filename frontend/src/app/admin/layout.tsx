@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { useAuthStore } from '@/lib/stores/auth'
+import { useAuthStore, getRoleFromToken } from '@/lib/stores/auth'
 import { ChartBar, Users, Buildings, CalendarBlank, SignOut } from '@phosphor-icons/react'
 
 const navLinks = [
@@ -12,21 +12,6 @@ const navLinks = [
   { href: '/admin/propiedades', label: 'Propiedades', icon: Buildings },
   { href: '/admin/reservas', label: 'Reservas', icon: CalendarBlank },
 ]
-
-function getRoleFromToken(token: string | null): string | null {
-  if (!token) return null
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    // .NET emits role under the full claim URI
-    return (
-      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
-      payload.role ??
-      null
-    )
-  } catch {
-    return null
-  }
-}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, token, clearAuth } = useAuthStore()
