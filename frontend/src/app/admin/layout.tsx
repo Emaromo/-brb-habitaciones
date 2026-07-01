@@ -13,17 +13,35 @@ const navLinks = [
   { href: '/admin/reservas', label: 'Reservas', icon: CalendarBlank },
 ]
 
+function getRoleFromToken(token: string | null): string | null {
+  if (!token) return null
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    // .NET emits role under the full claim URI
+    return (
+      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
+      payload.role ??
+      null
+    )
+  } catch {
+    return null
+  }
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user, clearAuth } = useAuthStore()
+  const { isAuthenticated, user, token, clearAuth } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
 
+  const role = getRoleFromToken(token) ?? user?.role ?? null
+  const isAdmin = role === 'Administrador'
+
   useEffect(() => {
     if (!isAuthenticated) router.replace('/login')
-    else if (user?.role !== 'Administrador') router.replace('/')
-  }, [isAuthenticated, user, router])
+    else if (!isAdmin) router.replace('/')
+  }, [isAuthenticated, isAdmin, router])
 
-  if (!isAuthenticated || user?.role !== 'Administrador') return null
+  if (!isAuthenticated || !isAdmin) return null
 
   const handleLogout = () => {
     clearAuth()
